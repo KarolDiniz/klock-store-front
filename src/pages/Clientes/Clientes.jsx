@@ -8,7 +8,6 @@ import Modal from "@mui/material/Modal";
 import Table from "@mui/material/Table";
 import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import CircularProgress from "@mui/material/CircularProgress";
 import TextField from "@mui/material/TextField";
@@ -23,6 +22,7 @@ const Clientes = () => {
   const [isCarregando, setIsCarregando] = useState(true);
   const [indiceHovered, setIndiceHovered] = useState(null);
   const [isModalCadastroAberto, setIsModalCadastroAberto] = useState(false);
+  const [isModalEditarAberto, setIsModalEditarAberto] = useState(false); // Novo estado para o modal de edição
   const [novoCliente, setNovoCliente] = useState({ email: "", vip: false });
 
   useEffect(() => {
@@ -58,6 +58,15 @@ const Clientes = () => {
     setIsModalCadastroAberto(false);
   };
 
+  const handleAbrirModalEditar = () => {
+    setIsModalEditarAberto(true);
+    setNovoCliente(clienteSelecionado);  // Passa os dados do cliente selecionado para o estado de edição
+  };
+
+  const handleFecharModalEditar = () => {
+    setIsModalEditarAberto(false);
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNovoCliente((prev) => ({
@@ -91,6 +100,28 @@ const Clientes = () => {
       setIsModalDetalhesAberto(false); // Fecha o modal após a remoção
     } catch (error) {
       console.error("Erro ao remover cliente:", error);
+    }
+  };
+
+  const handleEditarCliente = async () => {
+    try {
+      // Dados de exemplo para a edição
+      const clienteAtualizado = {
+        email: clienteSelecionado.email,
+        vip: clienteSelecionado.vip,
+      };
+
+      await axios.put(`http://localhost:8080/api/clientes/${clienteSelecionado.id}`, clienteAtualizado);
+
+      // Atualiza a lista de clientes com o cliente editado
+      setClientes((prevClientes) =>
+        prevClientes.map((cliente) =>
+          cliente.id === clienteSelecionado.id ? { ...cliente, ...clienteAtualizado } : cliente
+        )
+      );
+      setIsModalEditarAberto(false); // Fecha o modal após a edição
+    } catch (error) {
+      console.error("Erro ao editar cliente:", error);
     }
   };
 
@@ -215,29 +246,84 @@ const Clientes = () => {
                 </Table>
               </TableContainer>
 
-              <Button
+              {/* Botões de Editar e Remover visíveis apenas quando o modal de detalhes estiver aberto */}
+              <div style={{ marginTop: "1rem", textAlign: "center" }}>
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  style={{ marginRight: "1rem" }}
+                  onClick={handleAbrirModalEditar} // Abre o modal de edição
+                >
+                  Editar
+                </Button>
+
+                <Button
+                  variant="outlined"
+                  color="secondary"
+                  style={{
+                    marginLeft: "1rem",
+                    color: "#ff0000",
+                    borderColor: "#ff0000",
+                  }}
+                  onClick={() => handleRemoverCliente(clienteSelecionado.id)} // Função para remover o cliente
+                >
+                  Remover
+                </Button>
+              </div>
+            </>
+          )}
+        </Paper>
+      </Modal>
+
+      {/* Modal para edição do cliente */}
+      <Modal open={isModalEditarAberto} onClose={handleFecharModalEditar}>
+        <Paper
+          style={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            padding: "40px",
+            borderRadius: "1rem",
+          }}
+        >
+          <Typography
+            variant="h5"
+            style={{ textAlign: "center", marginBottom: "2rem", fontWeight: "bold" }}
+          >
+            Editar Cliente
+          </Typography>
+          {clienteSelecionado && (
+            <>
+              <TextField
+                label="Email"
                 variant="outlined"
-                color="secondary"
-                style={{
-                  marginTop: "1rem",
-                  color: "#ff0000",
-                  borderColor: "#ff0000",
-                  marginLeft: "20rem",
-                }}
-                onClick={() => handleRemoverCliente(clienteSelecionado.id)}
+                fullWidth
+                value={clienteSelecionado.email || ""}
+                onChange={(e) =>
+                  setClienteSelecionado({ ...clienteSelecionado, email: e.target.value })
+                }
+                style={{ marginBottom: "1rem" }}
+              />
+              <div style={{ marginBottom: "1rem" }}>
+                <input
+                  type="checkbox"
+                  checked={clienteSelecionado.vip || false}
+                  onChange={(e) =>
+                    setClienteSelecionado({ ...clienteSelecionado, vip: e.target.checked })
+                  }
+                />
+                <label>VIP</label>
+              </div>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleEditarCliente}
               >
-                Remover Cliente
+                Atualizar Cliente
               </Button>
             </>
           )}
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleFecharModalDetalhes}
-            style={{ marginTop: "1rem", marginLeft: "1rem" }}
-          >
-            Fechar
-          </Button>
         </Paper>
       </Modal>
 
@@ -262,10 +348,10 @@ const Clientes = () => {
           <TextField
             label="Email"
             variant="outlined"
-            name="email"
+            fullWidth
             value={novoCliente.email}
             onChange={handleInputChange}
-            fullWidth
+            name="email"
             style={{ marginBottom: "1rem" }}
           />
           <div style={{ marginBottom: "1rem" }}>

@@ -14,24 +14,22 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import { Box } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";  // Importando o ícone de adicionar
-import DeleteIcon from "@mui/icons-material/Delete"; // Importando o ícone de lixeira
+import AddIcon from "@mui/icons-material/Add";  
+import DeleteIcon from "@mui/icons-material/Delete"; 
+import EditIcon from "@mui/icons-material/Edit"; // Importando o ícone de editar
 
 const Pedidos = () => {
   const [pedidos, setPedidos] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [novoPedido, setNovoPedido] = useState({
-    cliente: { id: "" }, 
-    items: [{ id: "" }], 
-  });
-  
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false); // Modal de edição
+  const [pedidoEditado, setPedidoEditado] = useState(null); // Estado para armazenar o pedido a ser editado
   const [erro, setErro] = useState("");
 
   useEffect(() => {
     const fetchPedidos = async () => {
       try {
-        const response = await fetch("http://localhost:8080/api/pedidos"); // URL da API
+        const response = await fetch("http://localhost:8080/api/pedidos"); 
         const data = await response.json();
         setPedidos(data);
         setIsLoading(false);
@@ -69,6 +67,64 @@ const Pedidos = () => {
     }
   };
 
+  const handleEditPedido = (pedido) => {
+    setPedidoEditado(pedido);
+    setIsEditModalOpen(true);
+  };
+
+  const handleUpdatePedido = async () => {
+    if (!pedidoEditado.cliente.id || pedidoEditado.items.length === 0) {
+      setErro("Por favor, preencha todos os campos corretamente.");
+      return;
+    }
+
+    const response = await fetch(`http://localhost:8080/api/pedidos/${pedidoEditado.id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(pedidoEditado),
+    });
+
+    if (response.ok) {
+      const pedidoAtualizado = await response.json();
+      setPedidos((prevPedidos) => 
+        prevPedidos.map((pedido) => 
+          pedido.id === pedidoAtualizado.id ? pedidoAtualizado : pedido
+        )
+      );
+      setIsEditModalOpen(false);
+      alert("Pedido atualizado com sucesso!");
+    } else {
+      alert("Falha ao atualizar pedido.");
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+
+    if (name === "cliente.id") {
+      setPedidoEditado((prevState) => ({
+        ...prevState,
+        cliente: { ...prevState.cliente, id: parseInt(value, 10) },
+      }));
+    } else {
+      setPedidoEditado({
+        ...pedidoEditado,
+        [name]: value,
+      });
+    }
+  };
+
+  const handleItemInputChange = (index, value) => {
+    const updatedItems = [...pedidoEditado.items];
+    updatedItems[index] = { id: parseInt(value, 10) };
+    setPedidoEditado({
+      ...pedidoEditado,
+      items: updatedItems,
+    });
+  };
+
   const handleRemoverPedido = async (pedidoId) => {
     try {
       const response = await fetch(`http://localhost:8080/api/pedidos/${pedidoId}`, {
@@ -85,38 +141,6 @@ const Pedidos = () => {
       console.error("Erro ao excluir pedido:", error);
       alert("Erro ao excluir pedido.");
     }
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-
-    if (name === "cliente.id") {
-      setNovoPedido((prevState) => ({
-        ...prevState,
-        cliente: { ...prevState.cliente, id: parseInt(value, 10) },
-      }));
-    } else {
-      setNovoPedido({
-        ...novoPedido,
-        [name]: value,
-      });
-    }
-  };
-
-  const handleItemInputChange = (index, value) => {
-    const updatedItems = [...novoPedido.items];
-    updatedItems[index] = { id: parseInt(value, 10) };
-    setNovoPedido({
-      ...novoPedido,
-      items: updatedItems,
-    });
-  };
-
-  const addNewItemField = () => {
-    setNovoPedido({
-      ...novoPedido,
-      items: [...novoPedido.items, { id: "" }], // Adicionando um novo item
-    });
   };
 
   return (
@@ -169,7 +193,7 @@ const Pedidos = () => {
                   <TableCell>Total com Desconto</TableCell>
                   <TableCell>Status de Estoque</TableCell>
                   <TableCell>Data de Entrega</TableCell>
-                  <TableCell></TableCell> 
+                  <TableCell></TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -203,6 +227,13 @@ const Pedidos = () => {
                       >
                         <DeleteIcon sx={{ color: "#9754e4" }} />
                       </Button>
+                      <Button
+                        color="primary"
+                        onClick={() => handleEditPedido(pedido)} 
+                        sx={{ marginLeft: "1rem" }}
+                      >
+                        <EditIcon sx={{ color: "#9754e4" }} />
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -212,7 +243,8 @@ const Pedidos = () => {
         </Grid>
       )}
 
-      <Modal open={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)}>
+      {/* Modal de Edição */}
+      <Modal open={isEditModalOpen} onClose={() => setIsEditModalOpen(false)}>
         <Paper
           sx={{
             position: "absolute",
@@ -224,12 +256,12 @@ const Pedidos = () => {
             width: "400px",
             backgroundColor: "#fff",
             boxShadow: 24,
-            maxHeight: "80vh", // Definir a altura máxima do modal
-            overflowY: "auto", // Permitir rolagem quando o conteúdo exceder a altura
+            maxHeight: "80vh",
+            overflowY: "auto",
           }}
         >
           <Typography variant="h5" sx={{ textAlign: "center", marginBottom: "1.5rem" }}>
-            Criar Novo Pedido
+            Editar Pedido
           </Typography>
 
           {erro && (
@@ -243,14 +275,13 @@ const Pedidos = () => {
             variant="outlined"
             name="cliente.id"
             type="number"
-            value={novoPedido.cliente.id}
+            value={pedidoEditado?.cliente.id || ""}
             onChange={handleInputChange}
             fullWidth
             sx={{ marginBottom: "1rem" }}
           />
 
-          {/* Campos de itens dinâmicos */}
-          {novoPedido.items.map((item, index) => (
+          {pedidoEditado?.items.map((item, index) => (
             <TextField
               key={index}
               label={`ID do Item ${index + 1}`}
@@ -263,18 +294,9 @@ const Pedidos = () => {
           ))}
 
           <Button
-            variant="outlined"
-            color="secondary"
-            onClick={addNewItemField}
-            sx={{ marginBottom: "1rem", width: "100%" }}
-          >
-            Adicionar Mais Itens
-          </Button>
-
-          <Button
             variant="contained"
             color="primary"
-            onClick={handleCreatePedido}
+            onClick={handleUpdatePedido}
             fullWidth
             sx={{
               marginTop: "1rem",
@@ -282,12 +304,12 @@ const Pedidos = () => {
               fontSize: "16px",
             }}
           >
-            Criar Pedido
+            Atualizar Pedido
           </Button>
 
           <Button
             variant="outlined"
-            onClick={() => setIsCreateModalOpen(false)}
+            onClick={() => setIsEditModalOpen(false)}
             sx={{
               marginTop: "1rem",
               padding: "10px 0",
