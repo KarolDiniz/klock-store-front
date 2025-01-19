@@ -22,22 +22,19 @@ npm run dev
 # Acesso à Aplicação
 Após a execução bem-sucedida do projeto, acesse a aplicação no seu navegador preferido através do seguinte endereço: http://localhost:5173
 
-# Cadastro de usuário - Primeira tela do fluxo
-Ao acessar a aplicação, insira um e-mail válido e se o cliente é VIP ou NÃO VIP
-
-1. E-mail: Cliente@gmail.com
-2. Marca checkbox - VIP ou NÃO VIP
-3. Clica no botão (CADASTRAR CLIENTE)
-
+# Primeira tela do fluxo
+Ao acessar a aplicação, clique em entrar. Você irá ser redirecionado para o HOME.
 
 # Navegação na Aplicação
-1. No menu superior, clique em Produtos para visualizar a lista de produtos ou itens. Você pode adicionar mais itens em "Criar produto".
+1. No menu superior, clique em Clientes para visualizar a lista de clientes. Você pode adicionar mais clientes em "Criar cliente".
 
-2. Utilize o filtro por nome para pesquisar itens (observe que o filtro é por letra, não por ordem alfabética).
+2. No menu superior, clique em Produtos para visualizar a lista de produtos ou itens. Você pode adicionar mais itens em "Criar produto".
 
-3. Clique no card de um produto ou item para visualizar mais detalhes.
+3. Utilize o filtro por nome para pesquisar itens (observe que o filtro é por letra, não por ordem alfabética).
 
-4. Na visualização detalhada, você encontrará um modal com opções adicionais, incluindo a opção de deletar o produto.
+4. Clique no card de um produto ou item para visualizar mais detalhes.
+
+5. Na visualização detalhada, você encontrará um modal com opções adicionais, incluindo a opção de deletar o produto.
 
 6. No menu superior, clique em pedidos para visualizar uma tabela contendo o dado de todos os pedidos. Você pode adicionar mais pedidos em "Criar pedido".
 
