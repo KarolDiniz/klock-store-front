@@ -16,20 +16,25 @@ import TableRow from "@mui/material/TableRow";
 import { Box } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";  
 import DeleteIcon from "@mui/icons-material/Delete"; 
-import EditIcon from "@mui/icons-material/Edit"; // Importando o ícone de editar
+import EditIcon from "@mui/icons-material/Edit"; 
 
 const Pedidos = () => {
   const [pedidos, setPedidos] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false); // Modal de edição
-  const [pedidoEditado, setPedidoEditado] = useState(null); // Estado para armazenar o pedido a ser editado
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [pedidoEditando, setPedidoEditando] = useState(null);
+  const [novoPedido, setNovoPedido] = useState({
+    cliente: { id: "" }, 
+    items: [{ id: "" }], 
+  });
+
   const [erro, setErro] = useState("");
 
   useEffect(() => {
     const fetchPedidos = async () => {
       try {
-        const response = await fetch("http://localhost:8080/api/pedidos"); 
+        const response = await fetch("http://localhost:8080/api/pedidos");
         const data = await response.json();
         setPedidos(data);
         setIsLoading(false);
@@ -67,62 +72,27 @@ const Pedidos = () => {
     }
   };
 
-  const handleEditPedido = (pedido) => {
-    setPedidoEditado(pedido);
-    setIsEditModalOpen(true);
-  };
-
-  const handleUpdatePedido = async () => {
-    if (!pedidoEditado.cliente.id || pedidoEditado.items.length === 0) {
-      setErro("Por favor, preencha todos os campos corretamente.");
-      return;
-    }
-
-    const response = await fetch(`http://localhost:8080/api/pedidos/${pedidoEditado.id}`, {
+  const handleEditPedido = async () => {
+    const response = await fetch(`http://localhost:8080/api/pedidos/${pedidoEditando.id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(pedidoEditado),
+      body: JSON.stringify(pedidoEditando),
     });
 
     if (response.ok) {
       const pedidoAtualizado = await response.json();
-      setPedidos((prevPedidos) => 
-        prevPedidos.map((pedido) => 
+      setPedidos((prevPedidos) =>
+        prevPedidos.map((pedido) =>
           pedido.id === pedidoAtualizado.id ? pedidoAtualizado : pedido
         )
       );
       setIsEditModalOpen(false);
       alert("Pedido atualizado com sucesso!");
     } else {
-      alert("Falha ao atualizar pedido.");
+      alert("Falha ao editar pedido.");
     }
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-
-    if (name === "cliente.id") {
-      setPedidoEditado((prevState) => ({
-        ...prevState,
-        cliente: { ...prevState.cliente, id: parseInt(value, 10) },
-      }));
-    } else {
-      setPedidoEditado({
-        ...pedidoEditado,
-        [name]: value,
-      });
-    }
-  };
-
-  const handleItemInputChange = (index, value) => {
-    const updatedItems = [...pedidoEditado.items];
-    updatedItems[index] = { id: parseInt(value, 10) };
-    setPedidoEditado({
-      ...pedidoEditado,
-      items: updatedItems,
-    });
   };
 
   const handleRemoverPedido = async (pedidoId) => {
@@ -141,6 +111,38 @@ const Pedidos = () => {
       console.error("Erro ao excluir pedido:", error);
       alert("Erro ao excluir pedido.");
     }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+
+    if (name === "cliente.id") {
+      setPedidoEditando((prevState) => ({
+        ...prevState,
+        cliente: { ...prevState.cliente, id: parseInt(value, 10) },
+      }));
+    } else {
+      setPedidoEditando({
+        ...pedidoEditando,
+        [name]: value,
+      });
+    }
+  };
+
+  const handleItemInputChange = (index, value) => {
+    const updatedItems = [...pedidoEditando.items];
+    updatedItems[index] = { id: parseInt(value, 10) };
+    setPedidoEditando({
+      ...pedidoEditando,
+      items: updatedItems,
+    });
+  };
+
+  const addNewItemField = () => {
+    setPedidoEditando({
+      ...pedidoEditando,
+      items: [...pedidoEditando.items, { id: "" }], 
+    });
   };
 
   return (
@@ -193,7 +195,7 @@ const Pedidos = () => {
                   <TableCell>Total com Desconto</TableCell>
                   <TableCell>Status de Estoque</TableCell>
                   <TableCell>Data de Entrega</TableCell>
-                  <TableCell></TableCell>
+                  <TableCell>Ações</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -221,18 +223,20 @@ const Pedidos = () => {
                     </TableCell>
                     <TableCell>
                       <Button
+                        color="primary"
+                        onClick={() => {
+                          setPedidoEditando(pedido);
+                          setIsEditModalOpen(true);
+                        }}
+                      >
+                        <EditIcon sx={{ color: "#9754e4" }} />
+                      </Button>
+                      <Button
                         color="secondary"
-                        onClick={() => handleRemoverPedido(pedido.id)} 
+                        onClick={() => handleRemoverPedido(pedido.id)}
                         sx={{ marginLeft: "1rem" }}
                       >
                         <DeleteIcon sx={{ color: "#9754e4" }} />
-                      </Button>
-                      <Button
-                        color="primary"
-                        onClick={() => handleEditPedido(pedido)} 
-                        sx={{ marginLeft: "1rem" }}
-                      >
-                        <EditIcon sx={{ color: "#9754e4" }} />
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -242,6 +246,98 @@ const Pedidos = () => {
           </TableContainer>
         </Grid>
       )}
+
+      {/* Modal de Criação */}
+      <Modal open={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)}>
+        <Paper
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            padding: "20px",
+            borderRadius: "1rem",
+            width: "400px",
+            backgroundColor: "#fff",
+            boxShadow: 24,
+            maxHeight: "80vh",
+            overflowY: "auto",
+          }}
+        >
+          <Typography variant="h5" sx={{ textAlign: "center", marginBottom: "1.5rem" }}>
+            Criar Pedido
+          </Typography>
+
+          {erro && (
+            <Typography variant="body2" color="error" sx={{ textAlign: "center", marginBottom: "1rem" }}>
+              {erro}
+            </Typography>
+          )}
+
+          <TextField
+            label="ID do Cliente"
+            variant="outlined"
+            name="cliente.id"
+            type="number"
+            value={novoPedido.cliente.id || ""}
+            onChange={(e) => setNovoPedido({ ...novoPedido, cliente: { id: parseInt(e.target.value, 10) } })}
+            fullWidth
+            sx={{ marginBottom: "1rem" }}
+          />
+
+          {novoPedido.items.map((item, index) => (
+            <TextField
+              key={index}
+              label={`ID do Item ${index + 1}`}
+              variant="outlined"
+              value={item.id}
+              onChange={(e) => {
+                const updatedItems = [...novoPedido.items];
+                updatedItems[index] = { id: parseInt(e.target.value, 10) };
+                setNovoPedido({ ...novoPedido, items: updatedItems });
+              }}
+              fullWidth
+              sx={{ marginBottom: "1rem" }}
+            />
+          ))}
+
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={() => setNovoPedido({ ...novoPedido, items: [...novoPedido.items, { id: "" }] })}
+            sx={{ marginBottom: "1rem", width: "100%" }}
+          >
+            Adicionar Mais Itens
+          </Button>
+
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleCreatePedido}
+            fullWidth
+            sx={{
+              marginTop: "1rem",
+              padding: "10px 0",
+              fontSize: "16px",
+            }}
+          >
+            Criar Pedido
+          </Button>
+
+          <Button
+            variant="outlined"
+            onClick={() => setIsCreateModalOpen(false)}
+            sx={{
+              marginTop: "1rem",
+              padding: "10px 0",
+              fontSize: "16px",
+              width: "100%",
+            }}
+          >
+            Cancelar
+          </Button>
+        </Paper>
+      </Modal>
 
       {/* Modal de Edição */}
       <Modal open={isEditModalOpen} onClose={() => setIsEditModalOpen(false)}>
@@ -275,13 +371,13 @@ const Pedidos = () => {
             variant="outlined"
             name="cliente.id"
             type="number"
-            value={pedidoEditado?.cliente.id || ""}
+            value={pedidoEditando?.cliente.id || ""}
             onChange={handleInputChange}
             fullWidth
             sx={{ marginBottom: "1rem" }}
           />
 
-          {pedidoEditado?.items.map((item, index) => (
+          {pedidoEditando?.items.map((item, index) => (
             <TextField
               key={index}
               label={`ID do Item ${index + 1}`}
@@ -294,9 +390,18 @@ const Pedidos = () => {
           ))}
 
           <Button
+            variant="outlined"
+            color="secondary"
+            onClick={addNewItemField}
+            sx={{ marginBottom: "1rem", width: "100%" }}
+          >
+            Adicionar Mais Itens
+          </Button>
+
+          <Button
             variant="contained"
             color="primary"
-            onClick={handleUpdatePedido}
+            onClick={handleEditPedido}
             fullWidth
             sx={{
               marginTop: "1rem",
@@ -304,7 +409,7 @@ const Pedidos = () => {
               fontSize: "16px",
             }}
           >
-            Atualizar Pedido
+            Editar Pedido
           </Button>
 
           <Button
