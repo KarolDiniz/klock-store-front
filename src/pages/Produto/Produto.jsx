@@ -64,12 +64,30 @@ const Produto = () => {
     setValorFiltro(event.target.value);
   };
 
-  const handleRemoverProduto = () => {
-    setProdutos((produtosAnteriores) =>
-      produtosAnteriores.filter((produto) => produto.id !== produtoSelecionado.id)
-    );
-    handleFecharModalDetalhes();
+  const handleRemoverProduto = async () => {
+    if (!produtoSelecionado) return;
+  
+    try {
+      const response = await fetch(`http://localhost:8080/api/itens/${produtoSelecionado.id}`, {
+        method: "DELETE",
+      });
+  
+      if (response.ok) {
+        setProdutos((produtosAnteriores) =>
+          produtosAnteriores.filter((produto) => produto.id !== produtoSelecionado.id)
+        );
+        alert("Produto removido com sucesso!");
+      } else {
+        alert("Erro ao remover o produto. Tente novamente.");
+      }
+    } catch (error) {
+      console.error("Erro ao remover produto:", error);
+      alert("Erro ao se comunicar com o servidor. Verifique a conexão.");
+    } finally {
+      handleFecharModalDetalhes();
+    }
   };
+  
 
   const handleCardMouseEnter = (index) => {
     setIndiceHovered(index);

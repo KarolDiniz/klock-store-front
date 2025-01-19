@@ -12,9 +12,9 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import CircularProgress from "@mui/material/CircularProgress";
 import TextField from "@mui/material/TextField";
-import AddIcon from "@mui/icons-material/Add"; // Importando o ícone de adicionar
-import axios from "axios"; // Importando axios
-import usuarioIcone from "@img/usuario-icone.png"; // Importando a imagem
+import AddIcon from "@mui/icons-material/Add"; // Ícone para adicionar cliente
+import axios from "axios"; // Axios para requisições HTTP
+import usuarioIcone from "@img/usuario-icone.png"; // Ícone de usuário
 
 const Clientes = () => {
   const [clientes, setClientes] = useState([]);
@@ -48,14 +48,6 @@ const Clientes = () => {
 
   const handleFecharModalDetalhes = () => {
     setIsModalDetalhesAberto(false);
-  };
-
-  const handleCardMouseEnter = (index) => {
-    setIndiceHovered(index);
-  };
-
-  const handleCardMouseLeave = () => {
-    setIndiceHovered(null);
   };
 
   const handleAbrirModalCadastro = () => {
@@ -92,6 +84,16 @@ const Clientes = () => {
     }
   };
 
+  const handleRemoverCliente = async (id) => {
+    try {
+      await axios.delete(`http://localhost:8080/api/clientes/${id}`);
+      setClientes((prevClientes) => prevClientes.filter((cliente) => cliente.id !== id)); // Atualiza a lista de clientes
+      setIsModalDetalhesAberto(false); // Fecha o modal após a remoção
+    } catch (error) {
+      console.error("Erro ao remover cliente:", error);
+    }
+  };
+
   return (
     <Grid container spacing={4} justifyContent="center">
       <Grid item xs={12} mt={-2} ml={0}>
@@ -112,82 +114,69 @@ const Clientes = () => {
         </Grid>
       </Grid>
 
-    {isCarregando ? (
-      <div style={{ textAlign: "center", marginTop: "10rem" }}>
-        <Typography variant="h4" style={{ marginBottom: "10px" }}>
-          Carregando...
-        </Typography>
-        <CircularProgress />
-      </div>
-    ) : clientes.length === 0 ? (
-      <div style={{ textAlign: "center", marginTop: "10rem" }}>
+      {isCarregando ? (
+        <div style={{ textAlign: "center", marginTop: "10rem" }}>
+          <Typography variant="h4" style={{ marginBottom: "10px" }}>
+            Carregando...
+          </Typography>
+          <CircularProgress />
+        </div>
+      ) : clientes.length === 0 ? (
+        <div style={{ textAlign: "center", marginTop: "10rem" }}>
           <Typography variant="h5" style={{ marginBottom: "1rem", fontWeight: "bold" }}>
             Não há clientes disponíveis. <br />
             Cadastre um novo cliente!
           </Typography>
-      </div>
-    ) : (
-      <Paper
-        style={{
-          width: "70rem",
-          padding: "20px",
-          marginTop: "3rem",
-        }}
-      >
-        <Grid container spacing={5} justifyContent="center">
-          {clientes.map((cliente, index) => (
-            <Grid key={cliente.id} item xs={10} sm={6} md={4} lg={4}>
-              <Paper
-                onMouseEnter={() => handleCardMouseEnter(index)}
-                onMouseLeave={handleCardMouseLeave}
-                style={{
-                  borderRadius: "1rem",
-                  backgroundColor: "#edecf5",
-                  transition:
-                    "transform 0.3s ease-in-out, background-color 0.3s, color 0.3s",
-                  transform: indiceHovered === index ? "scale(1.15)" : "scale(1)",
-                  color: indiceHovered === index ? "#000" : "#6357F1",
-                }}
-              >
-                <TableContainer>
-                  <Table>
-                    <TableHead>
-                      <TableRow></TableRow>
-                    </TableHead>
-                    <TableRow onClick={() => handleClickLinha(cliente)}>
-                      <TableCell
-                        style={{
-                          color: "#6357F1",
-                          textAlign: "center",
-                        }}
-                      >
-                        <img
-                          src={usuarioIcone}
-                          alt="Ícone do Usuário"
-                          style={{
-                            width: "40px",
-                            height: "40px",
-                            borderRadius: "50%",
-                            marginRight: "10px",
-                          }}
-                        />
-                        <Typography
-                          variant="body2"
-                          style={{ fontWeight: "bold" }}
-                        >
-                          {cliente.email}
-                        </Typography>
-                      </TableCell>
-                    </TableRow>
-                  </Table>
-                </TableContainer>
-              </Paper>
-            </Grid>
-          ))}
-        </Grid>
-      </Paper>
-    )}
-
+        </div>
+      ) : (
+        <Paper
+          style={{
+            width: "70rem",
+            padding: "20px",
+            marginTop: "3rem",
+          }}
+        >
+          <Grid container spacing={5} justifyContent="center">
+            {clientes.map((cliente, index) => (
+              <Grid key={cliente.id} item xs={10} sm={6} md={4} lg={4}>
+                <Paper
+                  onMouseEnter={() => setIndiceHovered(index)}
+                  onMouseLeave={() => setIndiceHovered(null)}
+                  style={{
+                    borderRadius: "1rem",
+                    backgroundColor: "#edecf5",
+                    transition: "transform 0.3s ease-in-out",
+                    transform: indiceHovered === index ? "scale(1.15)" : "scale(1)",
+                    color: "#6357F1",
+                  }}
+                >
+                  <TableContainer>
+                    <Table>
+                      <TableRow onClick={() => handleClickLinha(cliente)}>
+                        <TableCell style={{ textAlign: "center" }}>
+                          <img
+                            src={usuarioIcone}
+                            alt="Ícone do Usuário"
+                            style={{
+                              width: "40px",
+                              height: "40px",
+                              borderRadius: "50%",
+                              marginRight: "10px",
+                            }}
+                          />
+                          <Typography variant="body2" style={{ fontWeight: "bold" }}>
+                            {cliente.email}
+                          </Typography>
+                        </TableCell>
+                      </TableRow>
+                    </Table>
+                  </TableContainer>
+                </Paper>
+              </Grid>
+            ))}
+          </Grid>
+        </Paper>
+      )}
 
       {/* Modal para exibir detalhes do cliente */}
       <Modal open={isModalDetalhesAberto} onClose={handleFecharModalDetalhes}>
@@ -208,28 +197,44 @@ const Clientes = () => {
             Detalhes do Cliente
           </Typography>
           {clienteSelecionado && (
-            <TableContainer>
-              <Table>
-                <TableHead>
+            <>
+              <TableContainer>
+                <Table>
                   <TableRow>
                     <TableCell>ID</TableCell>
-                    <TableCell>Email</TableCell>
-                    <TableCell>VIP</TableCell>
+                    <TableCell>{clienteSelecionado.id}</TableCell>
                   </TableRow>
-                </TableHead>
-                <TableRow>
-                  <TableCell>{clienteSelecionado.id}</TableCell>
-                  <TableCell>{clienteSelecionado.email}</TableCell>
-                  <TableCell>{clienteSelecionado.vip ? "Sim" : "Não"}</TableCell>
-                </TableRow>
-              </Table>
-            </TableContainer>
+                  <TableRow>
+                    <TableCell>Email</TableCell>
+                    <TableCell>{clienteSelecionado.email}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>VIP</TableCell>
+                    <TableCell>{clienteSelecionado.vip ? "Sim" : "Não"}</TableCell>
+                  </TableRow>
+                </Table>
+              </TableContainer>
+
+              <Button
+                variant="outlined"
+                color="secondary"
+                style={{
+                  marginTop: "1rem",
+                  color: "#ff0000",
+                  borderColor: "#ff0000",
+                  marginLeft: "20rem",
+                }}
+                onClick={() => handleRemoverCliente(clienteSelecionado.id)}
+              >
+                Remover Cliente
+              </Button>
+            </>
           )}
           <Button
             variant="contained"
             color="primary"
             onClick={handleFecharModalDetalhes}
-            style={{ marginTop: "1rem" }}
+            style={{ marginTop: "1rem", marginLeft: "1rem" }}
           >
             Fechar
           </Button>

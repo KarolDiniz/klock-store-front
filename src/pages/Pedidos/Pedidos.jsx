@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react"; 
 import { Menu } from "@ui/Menu";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
@@ -15,6 +15,7 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import { Box } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";  // Importando o ícone de adicionar
+import DeleteIcon from "@mui/icons-material/Delete"; // Importando o ícone de lixeira
 
 const Pedidos = () => {
   const [pedidos, setPedidos] = useState([]);
@@ -68,6 +69,24 @@ const Pedidos = () => {
     }
   };
 
+  const handleRemoverPedido = async (pedidoId) => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/pedidos/${pedidoId}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        setPedidos(pedidos.filter((pedido) => pedido.id !== pedidoId));
+        alert("Pedido excluído com sucesso!");
+      } else {
+        alert("Falha ao excluir pedido.");
+      }
+    } catch (error) {
+      console.error("Erro ao excluir pedido:", error);
+      alert("Erro ao excluir pedido.");
+    }
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
@@ -96,7 +115,7 @@ const Pedidos = () => {
   const addNewItemField = () => {
     setNovoPedido({
       ...novoPedido,
-      items: [...novoPedido.items, { id: "" }],
+      items: [...novoPedido.items, { id: "" }], // Adicionando um novo item
     });
   };
 
@@ -124,65 +143,74 @@ const Pedidos = () => {
       </Grid>
 
       {isLoading ? (
-  <Box sx={{ textAlign: "center", marginTop: "2rem" }}>
-    <Typography variant="h5" sx={{ marginBottom: "10px" }}>
-      Carregando...
-    </Typography>
-    <CircularProgress sx={{ color: "#6157bb" }} />
-  </Box>
-) : pedidos.length === 0 ? (
-  <Box sx={{ textAlign: "center", marginTop: "10rem" }}>
-    <Typography variant="h5" style={{ marginBottom: "1rem", fontWeight: "bold" }}>
-    Não há pedidos disponíveis. <br />
-    Cadastre um novo pedidos!
-    </Typography>
-  </Box>
-) : (
-  <Grid item xs={10.5}>
-    <TableContainer component={Paper} sx={{ borderRadius: "8px", boxShadow: 3 }}>
-      <Table sx={{ minWidth: 650 }}>
-        <TableHead>
-          <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
-            <TableCell>ID</TableCell>
-            <TableCell>Cliente</TableCell>
-            <TableCell>Itens</TableCell>
-            <TableCell>Total</TableCell>
-            <TableCell>Total com Desconto</TableCell>
-            <TableCell>Status de Estoque</TableCell>
-            <TableCell>Data de Entrega</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {pedidos.map((pedido) => (
-            <TableRow key={pedido.id} sx={{ "&:hover": { backgroundColor: "#f0f0f0" } }}>
-              <TableCell>{pedido.id}</TableCell>
-              <TableCell>
-                {pedido.cliente.id} - {pedido.cliente.email}{" "}
-                {pedido.cliente.vip && "(VIP)"}
-              </TableCell>
-              <TableCell>
-                {pedido.items.map((item, index) => (
-                  <div key={index}>
-                    {item.nome} (Qtd: {item.quantidade}) - R$ {item.preco}
-                  </div>
+        <Box sx={{ textAlign: "center", marginTop: "2rem" }}>
+          <Typography variant="h5" sx={{ marginBottom: "10px" }}>
+            Carregando...
+          </Typography>
+          <CircularProgress sx={{ color: "#6157bb" }} />
+        </Box>
+      ) : pedidos.length === 0 ? (
+        <Box sx={{ textAlign: "center", marginTop: "10rem" }}>
+          <Typography variant="h5" style={{ marginBottom: "1rem", fontWeight: "bold" }}>
+            Não há pedidos disponíveis. <br />
+            Cadastre um novo pedido!
+          </Typography>
+        </Box>
+      ) : (
+        <Grid item xs={10.5}>
+          <TableContainer component={Paper} sx={{ borderRadius: "8px", boxShadow: 3 }}>
+            <Table sx={{ minWidth: 650 }}>
+              <TableHead>
+                <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
+                  <TableCell>ID</TableCell>
+                  <TableCell>Cliente</TableCell>
+                  <TableCell>Itens</TableCell>
+                  <TableCell>Total</TableCell>
+                  <TableCell>Total com Desconto</TableCell>
+                  <TableCell>Status de Estoque</TableCell>
+                  <TableCell>Data de Entrega</TableCell>
+                  <TableCell></TableCell> 
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {pedidos.map((pedido) => (
+                  <TableRow key={pedido.id} sx={{ "&:hover": { backgroundColor: "#f0f0f0" } }}>
+                    <TableCell>{pedido.id}</TableCell>
+                    <TableCell>
+                      {pedido.cliente.id} - {pedido.cliente.email}{" "}
+                      {pedido.cliente.vip && "(VIP)"}
+                    </TableCell>
+                    <TableCell>
+                      {pedido.items.map((item, index) => (
+                        <div key={index}>
+                          {item.nome} (Qtd: {item.quantidade}) - R$ {item.preco}
+                        </div>
+                      ))}
+                    </TableCell>
+                    <TableCell>R$ {pedido.total}</TableCell>
+                    <TableCell>R$ {pedido.totalComDesconto}</TableCell>
+                    <TableCell>
+                      {pedido.emEstoque ? "Em Estoque" : "Fora de Estoque"}
+                    </TableCell>
+                    <TableCell>
+                      {new Date(pedido.dataEntrega).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        color="secondary"
+                        onClick={() => handleRemoverPedido(pedido.id)} 
+                        sx={{ marginLeft: "1rem" }}
+                      >
+                        <DeleteIcon sx={{ color: "#e45454" }} />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </TableCell>
-              <TableCell>R$ {pedido.total}</TableCell>
-              <TableCell>R$ {pedido.totalComDesconto}</TableCell>
-              <TableCell>
-                {pedido.emEstoque ? "Em Estoque" : "Fora de Estoque"}
-              </TableCell>
-              <TableCell>
-                {new Date(pedido.dataEntrega).toLocaleDateString()}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
-  </Grid>
-)}
-
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Grid>
+      )}
 
       <Modal open={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)}>
         <Paper
