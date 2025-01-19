@@ -14,12 +14,12 @@ import TextField from "@mui/material/TextField";
 import CircularProgress from "@mui/material/CircularProgress";
 import AddIcon from "@mui/icons-material/Add";  // Importando o ícone de adicionar
 
-
 const Produto = () => {
   const [produtos, setProdutos] = useState([]);
   const [produtoSelecionado, setProdutoSelecionado] = useState(null);
   const [isModalDetalhesAberto, setIsModalDetalhesAberto] = useState(false);
   const [isModalCriarAberto, setIsModalCriarAberto] = useState(false);
+  const [isModalEditarAberto, setIsModalEditarAberto] = useState(false); // Novo estado para modal de edição
   const [valorFiltro, setValorFiltro] = useState("");
   const [isCarregando, setIsCarregando] = useState(true);
   const [indiceHovered, setIndiceHovered] = useState(null);
@@ -64,11 +64,28 @@ const Produto = () => {
     setValorFiltro(event.target.value);
   };
 
-  const handleRemoverProduto = () => {
-    setProdutos((produtosAnteriores) =>
-      produtosAnteriores.filter((produto) => produto.id !== produtoSelecionado.id)
-    );
-    handleFecharModalDetalhes();
+  const handleRemoverProduto = async () => {
+    if (!produtoSelecionado) return;
+  
+    try {
+      const response = await fetch(`http://localhost:8080/api/itens/${produtoSelecionado.id}`, {
+        method: "DELETE",
+      });
+  
+      if (response.ok) {
+        setProdutos((produtosAnteriores) =>
+          produtosAnteriores.filter((produto) => produto.id !== produtoSelecionado.id)
+        );
+        alert("Produto removido com sucesso!");
+      } else {
+        alert("Erro ao remover o produto. Tente novamente.");
+      }
+    } catch (error) {
+      console.error("Erro ao remover produto:", error);
+      alert("Erro ao se comunicar com o servidor. Verifique a conexão.");
+    } finally {
+      handleFecharModalDetalhes();
+    }
   };
 
   const handleCardMouseEnter = (index) => {
@@ -112,6 +129,36 @@ const Produto = () => {
       alert("Produto criado com sucesso!");
     } else {
       alert("Falha ao criar produto.");
+    }
+  };
+
+  // Lógica para editar produto
+  const handleEditarProduto = (produto) => {
+    setNovoProduto(produto); // Preenche os campos com os dados do produto
+    setIsModalEditarAberto(true); // Abre o modal de edição
+    setIsModalDetalhesAberto(false); // Fecha o modal de detalhes
+  };
+
+  const handleSalvarEdicaoProduto = async () => {
+    const response = await fetch(`http://localhost:8080/api/itens/${novoProduto.id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(novoProduto),
+    });
+
+    if (response.ok) {
+      const produtoAtualizado = await response.json();
+      setProdutos((produtosAnteriores) =>
+        produtosAnteriores.map((produto) =>
+          produto.id === produtoAtualizado.id ? produtoAtualizado : produto
+        )
+      );
+      alert("Produto atualizado com sucesso!");
+      setIsModalEditarAberto(false);
+    } else {
+      alert("Falha ao atualizar o produto.");
     }
   };
 
@@ -239,7 +286,6 @@ const Produto = () => {
   </Paper>
 )}
 
-
       <Modal open={isModalDetalhesAberto} onClose={handleFecharModalDetalhes}>
         <Paper
           style={{
@@ -298,6 +344,91 @@ const Produto = () => {
             }}
           >
             Remover
+          </Button>
+          <Button
+            variant="outlined"
+            onClick={() => handleEditarProduto(produtoSelecionado)} // Adicionando o botão de editar
+            style={{
+              marginTop: "1rem",
+              marginLeft: "1rem",
+            }}
+          >
+            Editar
+          </Button>
+        </Paper>
+      </Modal>
+
+      {/* Modal para editar produto */}
+      <Modal open={isModalEditarAberto} onClose={() => setIsModalEditarAberto(false)}>
+        <Paper
+          style={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            padding: "40px",
+            borderRadius: "1rem",
+          }}
+        >
+          <Typography
+            variant="h5"
+            style={{ marginBottom: "1rem", fontWeight: "bold" }}
+          >
+            Editar Produto
+          </Typography>
+          <TextField
+            label="Nome do Produto"
+            variant="outlined"
+            name="nome"
+            value={novoProduto.nome}
+            onChange={handleInputChange}
+            fullWidth
+            style={{ marginBottom: "1rem" }}
+          />
+          <TextField
+            label="Preço"
+            variant="outlined"
+            name="preco"
+            type="number"
+            value={novoProduto.preco}
+            onChange={handleInputChange}
+            fullWidth
+            style={{ marginBottom: "1rem" }}
+          />
+          <TextField
+            label="Quantidade"
+            variant="outlined"
+            name="quantidade"
+            type="number"
+            value={novoProduto.quantidade}
+            onChange={handleInputChange}
+            fullWidth
+            style={{ marginBottom: "1rem" }}
+          />
+          <TextField
+            label="Estoque"
+            variant="outlined"
+            name="estoque"
+            type="number"
+            value={novoProduto.estoque}
+            onChange={handleInputChange}
+            fullWidth
+            style={{ marginBottom: "1rem" }}
+          />
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleSalvarEdicaoProduto}
+            fullWidth
+          >
+            Salvar Alterações
+          </Button>
+          <Button
+            variant="outlined"
+            onClick={() => setIsModalEditarAberto(false)}
+            style={{ marginTop: "1rem", width: "100%" }}
+          >
+            Cancelar
           </Button>
         </Paper>
       </Modal>

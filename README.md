@@ -14,10 +14,14 @@ cd nome-do-repositorio
 [OU FAÇA DOWLOAND DO ARQUIVO ZIP DO PROJETO]
 
 # Instale as Dependências:
+```bash
 npm install
+```
 
 # Execute o Projeto:
+```bash
 npm run dev
+```
 
 # Acesso à Aplicação
 Após a execução bem-sucedida do projeto, acesse a aplicação no seu navegador preferido através do seguinte endereço: http://localhost:5173

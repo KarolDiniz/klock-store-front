@@ -8,13 +8,12 @@ import Modal from "@mui/material/Modal";
 import Table from "@mui/material/Table";
 import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import CircularProgress from "@mui/material/CircularProgress";
 import TextField from "@mui/material/TextField";
-import AddIcon from "@mui/icons-material/Add"; // Importando o ícone de adicionar
-import axios from "axios"; // Importando axios
-import usuarioIcone from "@img/usuario-icone.png"; // Importando a imagem
+import AddIcon from "@mui/icons-material/Add"; // Ícone para adicionar cliente
+import axios from "axios"; // Axios para requisições HTTP
+import usuarioIcone from "@img/usuario-icone.png"; // Ícone de usuário
 
 const Clientes = () => {
   const [clientes, setClientes] = useState([]);
@@ -23,6 +22,7 @@ const Clientes = () => {
   const [isCarregando, setIsCarregando] = useState(true);
   const [indiceHovered, setIndiceHovered] = useState(null);
   const [isModalCadastroAberto, setIsModalCadastroAberto] = useState(false);
+  const [isModalEditarAberto, setIsModalEditarAberto] = useState(false); // Novo estado para o modal de edição
   const [novoCliente, setNovoCliente] = useState({ email: "", vip: false });
 
   useEffect(() => {
@@ -50,20 +50,21 @@ const Clientes = () => {
     setIsModalDetalhesAberto(false);
   };
 
-  const handleCardMouseEnter = (index) => {
-    setIndiceHovered(index);
-  };
-
-  const handleCardMouseLeave = () => {
-    setIndiceHovered(null);
-  };
-
   const handleAbrirModalCadastro = () => {
     setIsModalCadastroAberto(true);
   };
 
   const handleFecharModalCadastro = () => {
     setIsModalCadastroAberto(false);
+  };
+
+  const handleAbrirModalEditar = () => {
+    setIsModalEditarAberto(true);
+    setNovoCliente(clienteSelecionado);  // Passa os dados do cliente selecionado para o estado de edição
+  };
+
+  const handleFecharModalEditar = () => {
+    setIsModalEditarAberto(false);
   };
 
   const handleInputChange = (e) => {
@@ -92,6 +93,38 @@ const Clientes = () => {
     }
   };
 
+  const handleRemoverCliente = async (id) => {
+    try {
+      await axios.delete(`http://localhost:8080/api/clientes/${id}`);
+      setClientes((prevClientes) => prevClientes.filter((cliente) => cliente.id !== id)); // Atualiza a lista de clientes
+      setIsModalDetalhesAberto(false); // Fecha o modal após a remoção
+    } catch (error) {
+      console.error("Erro ao remover cliente:", error);
+    }
+  };
+
+  const handleEditarCliente = async () => {
+    try {
+      // Dados de exemplo para a edição
+      const clienteAtualizado = {
+        email: clienteSelecionado.email,
+        vip: clienteSelecionado.vip,
+      };
+
+      await axios.put(`http://localhost:8080/api/clientes/${clienteSelecionado.id}`, clienteAtualizado);
+
+      // Atualiza a lista de clientes com o cliente editado
+      setClientes((prevClientes) =>
+        prevClientes.map((cliente) =>
+          cliente.id === clienteSelecionado.id ? { ...cliente, ...clienteAtualizado } : cliente
+        )
+      );
+      setIsModalEditarAberto(false); // Fecha o modal após a edição
+    } catch (error) {
+      console.error("Erro ao editar cliente:", error);
+    }
+  };
+
   return (
     <Grid container spacing={4} justifyContent="center">
       <Grid item xs={12} mt={-2} ml={0}>
@@ -112,82 +145,69 @@ const Clientes = () => {
         </Grid>
       </Grid>
 
-    {isCarregando ? (
-      <div style={{ textAlign: "center", marginTop: "10rem" }}>
-        <Typography variant="h4" style={{ marginBottom: "10px" }}>
-          Carregando...
-        </Typography>
-        <CircularProgress />
-      </div>
-    ) : clientes.length === 0 ? (
-      <div style={{ textAlign: "center", marginTop: "10rem" }}>
+      {isCarregando ? (
+        <div style={{ textAlign: "center", marginTop: "10rem" }}>
+          <Typography variant="h4" style={{ marginBottom: "10px" }}>
+            Carregando...
+          </Typography>
+          <CircularProgress />
+        </div>
+      ) : clientes.length === 0 ? (
+        <div style={{ textAlign: "center", marginTop: "10rem" }}>
           <Typography variant="h5" style={{ marginBottom: "1rem", fontWeight: "bold" }}>
             Não há clientes disponíveis. <br />
             Cadastre um novo cliente!
           </Typography>
-      </div>
-    ) : (
-      <Paper
-        style={{
-          width: "70rem",
-          padding: "20px",
-          marginTop: "3rem",
-        }}
-      >
-        <Grid container spacing={5} justifyContent="center">
-          {clientes.map((cliente, index) => (
-            <Grid key={cliente.id} item xs={10} sm={6} md={4} lg={4}>
-              <Paper
-                onMouseEnter={() => handleCardMouseEnter(index)}
-                onMouseLeave={handleCardMouseLeave}
-                style={{
-                  borderRadius: "1rem",
-                  backgroundColor: "#edecf5",
-                  transition:
-                    "transform 0.3s ease-in-out, background-color 0.3s, color 0.3s",
-                  transform: indiceHovered === index ? "scale(1.15)" : "scale(1)",
-                  color: indiceHovered === index ? "#000" : "#6357F1",
-                }}
-              >
-                <TableContainer>
-                  <Table>
-                    <TableHead>
-                      <TableRow></TableRow>
-                    </TableHead>
-                    <TableRow onClick={() => handleClickLinha(cliente)}>
-                      <TableCell
-                        style={{
-                          color: "#6357F1",
-                          textAlign: "center",
-                        }}
-                      >
-                        <img
-                          src={usuarioIcone}
-                          alt="Ícone do Usuário"
-                          style={{
-                            width: "40px",
-                            height: "40px",
-                            borderRadius: "50%",
-                            marginRight: "10px",
-                          }}
-                        />
-                        <Typography
-                          variant="body2"
-                          style={{ fontWeight: "bold" }}
-                        >
-                          {cliente.email}
-                        </Typography>
-                      </TableCell>
-                    </TableRow>
-                  </Table>
-                </TableContainer>
-              </Paper>
-            </Grid>
-          ))}
-        </Grid>
-      </Paper>
-    )}
-
+        </div>
+      ) : (
+        <Paper
+          style={{
+            width: "70rem",
+            padding: "20px",
+            marginTop: "3rem",
+          }}
+        >
+          <Grid container spacing={5} justifyContent="center">
+            {clientes.map((cliente, index) => (
+              <Grid key={cliente.id} item xs={10} sm={6} md={4} lg={4}>
+                <Paper
+                  onMouseEnter={() => setIndiceHovered(index)}
+                  onMouseLeave={() => setIndiceHovered(null)}
+                  style={{
+                    borderRadius: "1rem",
+                    backgroundColor: "#edecf5",
+                    transition: "transform 0.3s ease-in-out",
+                    transform: indiceHovered === index ? "scale(1.15)" : "scale(1)",
+                    color: "#6357F1",
+                  }}
+                >
+                  <TableContainer>
+                    <Table>
+                      <TableRow onClick={() => handleClickLinha(cliente)}>
+                        <TableCell style={{ textAlign: "center" }}>
+                          <img
+                            src={usuarioIcone}
+                            alt="Ícone do Usuário"
+                            style={{
+                              width: "40px",
+                              height: "40px",
+                              borderRadius: "50%",
+                              marginRight: "10px",
+                            }}
+                          />
+                          <Typography variant="body2" style={{ fontWeight: "bold" }}>
+                            {cliente.email}
+                          </Typography>
+                        </TableCell>
+                      </TableRow>
+                    </Table>
+                  </TableContainer>
+                </Paper>
+              </Grid>
+            ))}
+          </Grid>
+        </Paper>
+      )}
 
       {/* Modal para exibir detalhes do cliente */}
       <Modal open={isModalDetalhesAberto} onClose={handleFecharModalDetalhes}>
@@ -208,31 +228,102 @@ const Clientes = () => {
             Detalhes do Cliente
           </Typography>
           {clienteSelecionado && (
-            <TableContainer>
-              <Table>
-                <TableHead>
+            <>
+              <TableContainer>
+                <Table>
                   <TableRow>
                     <TableCell>ID</TableCell>
-                    <TableCell>Email</TableCell>
-                    <TableCell>VIP</TableCell>
+                    <TableCell>{clienteSelecionado.id}</TableCell>
                   </TableRow>
-                </TableHead>
-                <TableRow>
-                  <TableCell>{clienteSelecionado.id}</TableCell>
-                  <TableCell>{clienteSelecionado.email}</TableCell>
-                  <TableCell>{clienteSelecionado.vip ? "Sim" : "Não"}</TableCell>
-                </TableRow>
-              </Table>
-            </TableContainer>
+                  <TableRow>
+                    <TableCell>Email</TableCell>
+                    <TableCell>{clienteSelecionado.email}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>VIP</TableCell>
+                    <TableCell>{clienteSelecionado.vip ? "Sim" : "Não"}</TableCell>
+                  </TableRow>
+                </Table>
+              </TableContainer>
+
+              {/* Botões de Editar e Remover visíveis apenas quando o modal de detalhes estiver aberto */}
+              <div style={{ marginTop: "1rem", textAlign: "center" }}>
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  style={{ marginRight: "1rem" }}
+                  onClick={handleAbrirModalEditar} // Abre o modal de edição
+                >
+                  Editar
+                </Button>
+
+                <Button
+                  variant="outlined"
+                  color="secondary"
+                  style={{
+                    marginLeft: "1rem",
+                    color: "#ff0000",
+                    borderColor: "#ff0000",
+                  }}
+                  onClick={() => handleRemoverCliente(clienteSelecionado.id)} // Função para remover o cliente
+                >
+                  Remover
+                </Button>
+              </div>
+            </>
           )}
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleFecharModalDetalhes}
-            style={{ marginTop: "1rem" }}
+        </Paper>
+      </Modal>
+
+      {/* Modal para edição do cliente */}
+      <Modal open={isModalEditarAberto} onClose={handleFecharModalEditar}>
+        <Paper
+          style={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            padding: "40px",
+            borderRadius: "1rem",
+          }}
+        >
+          <Typography
+            variant="h5"
+            style={{ textAlign: "center", marginBottom: "2rem", fontWeight: "bold" }}
           >
-            Fechar
-          </Button>
+            Editar Cliente
+          </Typography>
+          {clienteSelecionado && (
+            <>
+              <TextField
+                label="Email"
+                variant="outlined"
+                fullWidth
+                value={clienteSelecionado.email || ""}
+                onChange={(e) =>
+                  setClienteSelecionado({ ...clienteSelecionado, email: e.target.value })
+                }
+                style={{ marginBottom: "1rem" }}
+              />
+              <div style={{ marginBottom: "1rem" }}>
+                <input
+                  type="checkbox"
+                  checked={clienteSelecionado.vip || false}
+                  onChange={(e) =>
+                    setClienteSelecionado({ ...clienteSelecionado, vip: e.target.checked })
+                  }
+                />
+                <label>VIP</label>
+              </div>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleEditarCliente}
+              >
+                Atualizar Cliente
+              </Button>
+            </>
+          )}
         </Paper>
       </Modal>
 
@@ -257,10 +348,10 @@ const Clientes = () => {
           <TextField
             label="Email"
             variant="outlined"
-            name="email"
+            fullWidth
             value={novoCliente.email}
             onChange={handleInputChange}
-            fullWidth
+            name="email"
             style={{ marginBottom: "1rem" }}
           />
           <div style={{ marginBottom: "1rem" }}>
