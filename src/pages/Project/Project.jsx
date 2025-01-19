@@ -22,11 +22,11 @@ const Project = () => {
           <br />
           Para mais informações, consulte o README no repositório do GitHub através do link: 
           <a 
-            href="https://github.com/KarolDiniz/elevaty-store#" 
+            href="https://github.com/KarolDiniz/klock-store-front.git" 
             target="_blank" 
             rel="noopener noreferrer"
           >
-            https://github.com/KarolDiniz/elevaty-store#
+            https://github.com/KarolDiniz/klock-store-front.git
           </a>
         </Typography>
       </Grid>

@@ -201,7 +201,7 @@ const Pedidos = () => {
                         onClick={() => handleRemoverPedido(pedido.id)} 
                         sx={{ marginLeft: "1rem" }}
                       >
-                        <DeleteIcon sx={{ color: "#e45454" }} />
+                        <DeleteIcon sx={{ color: "#9754e4" }} />
                       </Button>
                     </TableCell>
                   </TableRow>
