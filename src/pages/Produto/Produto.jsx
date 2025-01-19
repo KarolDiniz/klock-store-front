@@ -162,7 +162,7 @@ const Produto = () => {
       color: "#6357F1",
     }}
   >
-    Não há produtos disponíveis. 
+    Não há produtos disponíveis. <br /> 
     Cadastre um novo produto!
   </Typography>
 ) : (
