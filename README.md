@@ -1,51 +1,81 @@
 # Desafio Técnico - Klock-store
 
-Este projeto foi desenvolvido como parte de um desafio técnico, apresentando uma aplicação web - frontend para o backend proposto no desafio em SPRING. O seu funcionamento é para a visualização e gerenciamento de pedidos e seus respectivos itens e clientes. Siga as instruções abaixo para configurar e executar o projeto em seu ambiente local.
+Este projeto foi desenvolvido como parte de um desafio técnico, apresentando uma aplicação web (frontend) integrada ao backend proposto no desafio em **Spring Boot**. O objetivo principal da aplicação é permitir a visualização e o gerenciamento de pedidos, itens e clientes. 
 
-# Vídeo demonstrativo
-adicionar link
+Siga as instruções abaixo para configurar e executar o projeto em seu ambiente local.
 
-# Instruções de Instalação
+---
 
-Clone o Repositório:
-git clone https://github.com/seu-usuario/nome-do-repositorio.git
-cd nome-do-repositorio
+## 📹 Vídeo Demonstrativo  
+https://youtu.be/HC1QFjFxl-w
 
-[OU FAÇA DOWLOAND DO ARQUIVO ZIP DO PROJETO]
+---
 
-# Instale as Dependências:
+## 🚀 Instruções de Instalação  
+
+### 1️⃣ Pré-requisitos  
+Certifique-se de que seu ambiente possui os seguintes softwares instalados:  
+- **Node.js** (versão 16 ou superior)  
+- **npm** (gerenciador de pacotes do Node.js)  
+
+### 2️⃣ Clone o repositório  
+
+```bash
+git clone https://github.com/KarolDiniz/klock-store-front.git
+```
+Ou faça o download do arquivo ZIP e extraia-o em seu computador.
+
+### 3️⃣ Instale as dependências
 ```bash
 npm install
 ```
 
-# Execute o Projeto:
+### 4️⃣ Execute o projeto
 ```bash
 npm run dev
 ```
 
-# Acesso à Aplicação
+### 🌐 Acesso à Aplicação
 Após a execução bem-sucedida do projeto, acesse a aplicação no seu navegador preferido através do seguinte endereço: http://localhost:5173
 
-# Primeira tela do fluxo
-Ao acessar a aplicação, clique em entrar. Você irá ser redirecionado para o HOME.
+## 🛠️ Funcionalidades  
 
-# Navegação na Aplicação
-1. No menu superior, clique em Clientes para visualizar a lista de clientes. Você pode adicionar mais clientes em "Criar cliente".
+### 1️⃣ Tela inicial  
+- Ao acessar a aplicação, clique em **Entrar** para ser redirecionado à página inicial (Home).
 
-2. No menu superior, clique em Produtos para visualizar a lista de produtos ou itens. Você pode adicionar mais itens em "Criar produto".
+### 2️⃣ Gerenciamento de Clientes  
+- Acesse a aba **Clientes** no menu superior para visualizar a lista de clientes cadastrados.  
+- Clique em **Criar cliente** para adicionar novos clientes.
 
-3. Utilize o filtro por nome para pesquisar itens (observe que o filtro é por letra, não por ordem alfabética).
+### 3️⃣ Gerenciamento de Produtos/Itens  
+- Acesse a aba **Produtos** no menu superior para visualizar a lista de itens cadastrados.  
+- Utilize o campo de **filtro por nome** para pesquisar itens. (*Nota: o filtro é por letras correspondentes, não por ordem alfabética*).  
+- Clique no card de um item para visualizar seus detalhes.  
+- Nos detalhes, será exibido um modal com opções adicionais, incluindo a possibilidade de deletar e editar o item.
 
-4. Clique no card de um produto ou item para visualizar mais detalhes.
+### 4️⃣ Gerenciamento de Pedidos  
+- Acesse a aba **Pedidos** no menu superior para visualizar uma tabela com todos os pedidos cadastrados.  
+- Clique em **Criar pedido** para adicionar um novo pedido.
 
-5. Na visualização detalhada, você encontrará um modal com opções adicionais, incluindo a opção de deletar o produto.
 
-6. No menu superior, clique em pedidos para visualizar uma tabela contendo o dado de todos os pedidos. Você pode adicionar mais pedidos em "Criar pedido".
+---
 
-7. Aproveite a experiência interativa da aplicação e explore as funcionalidades disponíveis.
+## ⚠️ Observações  
+- Certifique-se de que o **Node.js** e o **npm** estão instalados no seu sistema antes de iniciar o processo de instalação.  
+- Caso encontre problemas ou tenha dúvidas, consulte o vídeo demonstrativo ou entre em contato.  
 
--------------------------------------------------------------------------------------------------------------------
+---
 
-Observação: Certifique-se de ter o Node.js e o npm instalados em seu sistema antes de iniciar o processo de instalação.
+## 👩‍💻 Desenvolvido por  
+Karoline Diniz Ramos  
 
-Desenvolvido por [Karoline Diniz Ramos]
+---
+
+## 🔗 Links adicionais  
+
+- **Repositório do backend**: https://github.com/KarolDiniz/klock-store-back.git
+ 
+- **Tecnologias utilizadas**:  
+  - **Frontend**: React, CSS, HTML  
+  - **Backend**: Spring Boot, Java  
+

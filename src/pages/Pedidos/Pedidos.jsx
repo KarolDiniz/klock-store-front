@@ -17,6 +17,9 @@ import { Box } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";  
 import DeleteIcon from "@mui/icons-material/Delete"; 
 import EditIcon from "@mui/icons-material/Edit"; 
+import { Snackbar } from "@mui/material";
+import { CheckCircle, Error } from "@mui/icons-material"; // Ícones para a Snackbar
+
 
 const Pedidos = () => {
   const [pedidos, setPedidos] = useState([]);
@@ -28,6 +31,9 @@ const Pedidos = () => {
     cliente: { id: "" }, 
     items: [{ id: "" }], 
   });
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarType, setSnackbarType] = useState("success"); 
 
   const [erro, setErro] = useState("");
 
@@ -66,9 +72,15 @@ const Pedidos = () => {
       setPedidos((prevPedidos) => [...prevPedidos, pedidoCriado]);
       setIsCreateModalOpen(false);
       setErro("");
-      alert("Pedido criado com sucesso!");
+
+      // Exibe a notificação com o e-mail do cliente e a data de entrega
+      setSnackbarMessage(`Enviando email: ${pedidoCriado.cliente.email} - Seu pedido será entregue dia ${new Date(pedidoCriado.dataEntrega).toLocaleDateString()}`);
+      setSnackbarType("success"); // Definindo o tipo como sucesso
+      setSnackbarOpen(true);
     } else {
-      alert("Falha ao criar pedido.");
+      setSnackbarMessage("Falha ao criar pedido. Tente novamente.");
+      setSnackbarType("error"); // Definindo o tipo como erro
+      setSnackbarOpen(true);
     }
   };
 
@@ -426,6 +438,31 @@ const Pedidos = () => {
           </Button>
         </Paper>
       </Modal>
+      {/* Snackbar de notificação */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        message={
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            {snackbarType === "success" ? (
+              <CheckCircle sx={{ color: "#4caf50", marginRight: "10px" }} />
+            ) : (
+              <Error sx={{ color: "#f44336", marginRight: "10px" }} />
+            )}
+            <Typography variant="body1" sx={{ color: snackbarType === "success" ? "#4caf50" : "#f44336" }}>
+              {snackbarMessage}
+            </Typography>
+          </Box>
+        }
+        sx={{
+          backgroundColor: snackbarType === "success" ? "#e8f5e9" : "#ffebee",
+          borderRadius: "8px",
+          padding: "10px 20px",
+          boxShadow: 3,
+        }}
+      />
     </Grid>
   );
 };
