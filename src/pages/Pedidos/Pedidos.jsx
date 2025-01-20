@@ -207,7 +207,7 @@ const Pedidos = () => {
                   <TableCell>Total com Desconto</TableCell>
                   <TableCell>Status de Estoque</TableCell>
                   <TableCell>Data de Entrega</TableCell>
-                  <TableCell>Ações</TableCell>
+                  <TableCell></TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -234,6 +234,14 @@ const Pedidos = () => {
                       {new Date(pedido.dataEntrega).toLocaleDateString()}
                     </TableCell>
                     <TableCell>
+                    <Box 
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '1rem' // Espaçamento entre os botões
+                      }}
+                    >
                       <Button
                         color="primary"
                         onClick={() => {
@@ -250,6 +258,7 @@ const Pedidos = () => {
                       >
                         <DeleteIcon sx={{ color: "#9754e4" }} />
                       </Button>
+                    </Box>
                     </TableCell>
                   </TableRow>
                 ))}
